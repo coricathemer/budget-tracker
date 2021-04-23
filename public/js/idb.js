@@ -1,5 +1,3 @@
-const { response } = require("express");
-
 // creates a variable to hold the db connection
 let db;
 
@@ -22,6 +20,7 @@ request.onsuccess = function(event) {
 
   // check if app is online, if yes run uploadTransaction() function to send all local db data to api
   if (navigator.online) {
+    console.log('I am here!!')
     uploadEntry();
   }
 };
@@ -37,24 +36,26 @@ function saveRecord(record) {
   // opens a new transaction with the database with read and write permissions
   const transaction = db.transaction(['new-entry'], 'readwrite');
 
-  // access the object store for 'new-transaction'
-  const entryObjectStore = transaction.objectstore('new-entry');
+  // access the object store for 'new-entry'
+  const entryObjectStore = transaction.objectStore('new-entry');
 
   // add record to the store with add method
   entryObjectStore.add(record);
 }
 
 function uploadEntry() {
+  alert('Uploaded Entry')
   // open a transaction on the DB
   const transaction = db.transaction(['new-entry'], 'readwrite');
 
   // access your object store
-  const entryObjectStore = transaction.objectstore('new-entry');
+  const entryObjectStore = transaction.objectStore('new-entry');
 
   // get all records from store and set to a variable
   const getAll = entryObjectStore.getAll();
 
   // upon a successful .getAll() execution, run this function
+  console.log(JSON.stringify(getAll.result), "I am here ")
   getAll.onsuccess = function() {
     // if there was data in indexedDB's store, send it to the api server
     if (getAll.results.length > 0) {
@@ -65,7 +66,7 @@ function uploadEntry() {
           Accept: 'application/json, text/plain, */*', 'Content-Type': 'application/json'
         }
       })
-      .then(reponse => response.json())
+      .then(response => response.json())
       .then(serverResponse => {
         if (serverResponse.message) {
           throw new Error(serverResponse);
@@ -73,7 +74,7 @@ function uploadEntry() {
         // open on more transaction
         const transaction = db.transaction(['new-entry'], 'readwrite');
         //access the new-entry object stroe
-        const entryObjectStore = transaction.objectstore('new-entry');
+        const entryObjectStore = transaction.objectStore('new-entry');
         // clear all items in the store
         entryObjectStore.clear();
 
